@@ -45,42 +45,65 @@ public:
 };
 
 class Arbitre {
-private:
-    Personnage* _p1;
-    Personnage* _p2;
-
-public:
-    Arbitre(Personnage* p1, Personnage* p2) : _p1(p1), _p2(p2) {}
-
-    Personnage* personnage1() const { return _p1; }
-    Personnage* personnage2() const { return _p2; }
-
-    void un_round(Personnage* attaquant, Personnage* defenseur) {
-        int degats = attaquant->attaque();
-        std::cout << attaquant->nom() << " attaque " << defenseur->nom() << " avec ";
-        if (attaquant->a_une_arme()) {
-            std::cout << "son " << attaquant->a_une_arme()->nom() << " ";
-        } else {
-            std::cout << "ses poings ";
+    private:
+        PersonnageArme _p1;
+        PersonnageArme _p2;
+        int _round;
+    
+    public:
+        Arbitre(PersonnageArme p1, PersonnageArme p2) : _p1(p1), _p2(p2), _round(1) {}
+        
+        PersonnageArme personnage1() const {
+            return _p1;
         }
-        std::cout << "et inflige " << degats << " dégâts." << std::endl;
-        defenseur->blesse(degats);
-    }
-
-    void combat() {
-        int round = 1;
-        Personnage* attaquant = _p1;
-        Personnage* defenseur = _p2;
-        while (attaquant->est_vivant() && defenseur->est_vivant()) {
-            std::cout << "Round " << round << std::endl;
-            un_round(attaquant, defenseur);
-            if (defenseur->est_vivant()) {
-                std::swap(attaquant, defenseur);
-                un_round(attaquant, defenseur);
+        
+        PersonnageArme personnage2() const {
+            return _p2;
+        }
+        
+        void un_round() {
+            PersonnageArme attaquant;
+            PersonnageArme defenseur;
+            
+            // On alterne entre les deux personnages à chaque round
+            if (_round % 2 == 1) {
+                attaquant = _p1;
+                defenseur = _p2;
+            } else {
+                attaquant = _p2;
+                defenseur = _p1;
             }
-            round++;
-            std::cout << std::endl;
+            
+            // L'attaquant frappe le défenseur
+            int degats = attaquant.arme().degatAleatoire();
+            defenseur.blesse(degats);
+            
+            // On affiche les détails de l'attaque
+            cout << "Round " << _round << ":" << endl;
+            cout << attaquant.nom() << " attaque " << defenseur.nom() << " avec " << attaquant.arme().nom() << " et inflige " << degats << " dégâts." << endl;
+            cout << defenseur.nom() << " a maintenant " << defenseur.pointsDeVie() << " points de vie." << endl;
+            
+            // On incrémente le nombre de rounds
+            _round++;
         }
-        std::cout << "Le combat est terminé !" << std::endl;
-        if (_p1->est_vivant()) {
-            std::cout << _
+        
+        void combat() {
+            // On commence par afficher les informations des personnages
+            cout << "Combat entre " << _p1.nom() << " et " << _p2.nom() << " : " << endl;
+            cout << _p1.nom() << " (" << _p1.pointsDeVie() << " PV) est armé de " << _p1.arme().nom() << " (" << _p1.arme().degatMin() << "-" << _p1.arme().degatMax() << " dégâts)." << endl;
+            cout << _p2.nom() << " (" << _p2.pointsDeVie() << " PV) est armé de " << _p2.arme().nom() << " (" << _p2.arme().degatMin() << "-" << _p2.arme().degatMax() << " dégâts)." << endl;
+            
+            // On simule les rounds jusqu'à la fin du combat
+            while (_p1.estVivant() && _p2.estVivant()) {
+                un_round();
+            }
+            
+            // On affiche le gagnant
+            if (_p1.estVivant()) {
+                cout << _p1.nom() << " remporte le combat !" << endl;
+            } else {
+                cout << _p2.nom() << " remporte le combat !" << endl;
+            }
+        }
+};
+
